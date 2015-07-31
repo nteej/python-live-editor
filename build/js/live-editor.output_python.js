@@ -1,0 +1,370 @@
+this["Handlebars"] = this["Handlebars"] || {};
+this["Handlebars"]["templates"] = this["Handlebars"]["templates"] || {};
+this["Handlebars"]["templates"]["python-results"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
+
+function program1(depth0,data) {
+  
+  
+  return "\n        <h1>Results</h1>\n    ";
+  }
+
+function program3(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n        <table class=\"sql-result-table\">\n            <tr>\n                ";
+  stack1 = helpers.each.call(depth0, (depth0 && depth0.result), {hash:{},inverse:self.noop,fn:self.program(4, program4, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n            </tr>\n        </table>\n    ";
+  return buffer;
+  }
+function program4(depth0,data) {
+  
+  var buffer = "", stack1, helper, options;
+  buffer += "\n                    ";
+  stack1 = (helper = helpers.isNull || (depth0 && depth0.isNull),options={hash:{},inverse:self.program(7, program7, data),fn:self.program(5, program5, data),data:data},helper ? helper.call(depth0, (depth0 && depth0.data), options) : helperMissing.call(depth0, "isNull", (depth0 && depth0.data), options));
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n                ";
+  return buffer;
+  }
+function program5(depth0,data) {
+  
+  
+  return "\n                        <td>NULL</td>\n                    ";
+  }
+
+function program7(depth0,data) {
+  
+  var buffer = "", stack1, helper;
+  buffer += "\n                        <td>";
+  if (helper = helpers.data) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.data); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  buffer += escapeExpression(stack1)
+    + "</td>\n                    ";
+  return buffer;
+  }
+
+  buffer += "<html>\n<head>\n\n<style>\n\n</style>\n</head>\n\n<body>\n<div class=\"sql-output\">\n    ";
+  stack1 = helpers['if'].call(depth0, (depth0 && depth0.results), {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n    ";
+  stack1 = helpers.each.call(depth0, (depth0 && depth0.results), {hash:{},inverse:self.noop,fn:self.program(3, program3, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n</div>\n</body>\n</html>";
+  return buffer;
+  });;
+window.PythonOutput = Backbone.View.extend({
+    initialize: function(options) {
+        this.config = options.config;
+        this.output = options.output;
+        this.externalsDir = options.externalsDir;
+
+        //this.tester = new SQLTester(options);
+        window.pythonOutput.innerHTML = "";
+        this.render();
+
+
+        // Load SQL config options
+        //this.config.runCurVersion("sql", this);
+
+        // Register a helper to tell the difference between null and 0
+        Handlebars.registerHelper('isNull', function(variable, options) {
+            if (variable === null) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
+        });
+    },
+
+    render: function() {
+        this.$el.empty();
+        this.$frame = $("<iframe>")
+            .css({width: "100%", height: "100%", border: "0"})
+            .appendTo(this.el)
+            .show();
+    },
+
+    /*getDocument: function() {
+        return this.$frame[0].contentWindow.document;
+    },*/
+
+    /*getScreenshot: function(screenshotSize, callback) {
+        html2canvas(this.getDocument().body, {
+            imagesDir: this.output.imagesDir,
+            onrendered: function(canvas) {
+                var width = screenshotSize;
+                var height = (screenshotSize / canvas.width) * canvas.height;
+
+                // We want to resize the image to a thumbnail,
+                // which we can do by creating a temporary canvas
+                var tmpCanvas = document.createElement("canvas");
+                tmpCanvas.width = screenshotSize;
+                tmpCanvas.height = screenshotSize;
+                tmpCanvas.getContext("2d").drawImage(
+                    canvas, 0, 0, width, height);
+
+                // Send back the screenshot data
+                callback(tmpCanvas.toDataURL("image/png"));
+            }
+        });
+    },*/
+
+    /**
+     * Given an SQLite error and the current statement, suggest a better
+     * error message.  SQLlite error messages aren't always very descriptive,
+     * this should make common syntax errors easier to understand.
+     */
+    /*getErrorMessage: function(errorMessage, statement) {
+        errorMessage = errorMessage || "";
+        statement = statement || "";
+        statement = statement.toUpperCase();
+
+        // Possible SELECT with missing FROM
+        if (errorMessage.indexOf("no such column:") !== -1 &&
+                statement.indexOf("SELECT") !== -1 &&
+                statement.indexOf("FROM") === -1) {
+            errorMessage += ". " + $._("Are you missing a FROM clause?");
+        // Possible INSERT with missing INTO
+        } else if (errorMessage.indexOf(": syntax error") !== -1 &&
+                statement.indexOf("INSERT") !== -1 &&
+                statement.indexOf("VALUES") !== -1 &&
+                statement.indexOf("INTO") === -1) {
+            errorMessage += ". " + $._("Are you missing the INTO keyword?");
+        // Possible INSERT INTO with missing VALUES
+        } else if (errorMessage.indexOf(": syntax error") !== -1 &&
+                statement.indexOf("INSERT") !== -1 &&
+                statement.indexOf("INTO") !== -1 &&
+                statement.indexOf("VALUES") === -1) {
+            errorMessage += ". " +
+                $._("Are you missing the VALUES keyword?");
+        // Possible CREATE with missing what to create
+        } else if (errorMessage.indexOf(": syntax error") !== -1 &&
+                statement.indexOf("CREATE") !== -1 && (
+                    statement.indexOf("INDEX") === -1 ||
+                    statement.indexOf("TABLE") === -1 ||
+                    statement.indexOf("TRIGGER") === -1 ||
+                    statement.indexOf("VIEW") === -1)) {
+            errorMessage += ". " +
+                $._("You may be missing what to create. For " +
+                    "example CREATE TABLE...");
+        // Possible UPDATE without SET
+        } else if (errorMessage.indexOf(": syntax error") !== -1 &&
+                statement.indexOf("UPDATE") !== -1 &&
+                statement.indexOf("SET") === -1) {
+            errorMessage += ". " +
+                $._("Are you missing the SET keyword?");
+        }
+        return errorMessage;
+    },*/
+
+    lint: function(userCode, callback) {
+
+        Sk.configure({output:this.outf}); 
+        eval(Sk.importMainWithBody("<stdin>",false,userCode)); 
+        /*if (!window.SQLOutput.isSupported()) {
+            return callback([{
+                row: -1,
+                column: -1,
+                text: $._("Your browser is not recent enough to show " +
+                          "SQL output. Please upgrade your browser."),
+                type: "error",
+                source: "sqlite",
+                lint: undefined,
+                priority: 2
+            }]);
+        }
+
+        // To lint we execute each statement in an isolated environment.
+        // We also test for foreign key constraints being violated after
+        // each statement so we can give proper line numbers to the user
+        // if anything is violated.
+        var error;
+        var db = new SQL.Database();
+        var results = [];
+        SQLTester.Util.forEachStatement(userCode,
+                function(statement, lineNumber) {
+            try {
+                if (!statement) {
+                    throw new Error($._("It looks like you have an " +
+                        "unnecessary semicolon."));
+                }
+                var result =
+                    SQLTester.Util.execSingleStatementWithResults(db,
+                        statement);
+                if (result) {
+                    results.push(result);
+                }
+
+                // SQLite allows any column type name and uses these rules
+                // to determine the storage type:
+                // https://www.sqlite.org/datatype3.html
+                // Instead it would be better for learning purposes to require
+                // the valid names that things coerce to.
+                var tables = SQLTester.Util.getTables(db);
+                tables.forEach(function(table) {
+                    table.columns.forEach(function(column) {
+                        var type =  column.type.toUpperCase();
+                        var allowedTypes = ["TEXT", "NUMERIC", "INTEGER",
+                            "REAL", "NONE"];
+                        if (allowedTypes.indexOf(type) === -1) {
+                            throw new Error($._("Please use one of the valid column " +
+                                "types when creating a table: ") +
+                                allowedTypes.join(", "));
+                        }
+                    });
+                });
+
+                // Check if we have any new foreign key constraint violations
+                var fkResults = db.exec("PRAGMA foreign_key_check;");
+                if (fkResults.length > 0) {
+                    var result = fkResults[0];
+                    throw new Error("Please check for a foreign key constraint " +
+                        "on table " + result.values[0][0] +
+                        " for parent table " + result.values[0][2]);
+                }
+
+                // Check if we have any new integrity errors such as NOT NULL
+                // vilolations
+                var integrityResults = db.exec("PRAGMA integrity_check(1);");
+                var result = integrityResults[0];
+                if (result.values[0][0] !== "ok") {
+                    throw new Error("Integrity error: " + result.values[0][0]);
+                }
+
+                return true;
+            } catch (e) {
+                error = true;
+                callback([{
+                    row: lineNumber,
+                    column: 0,
+                    text: this.getErrorMessage(e.message, statement),
+                    type: "error",
+                    source: "sqlite",
+                    lint: undefined,
+                    priority: 2
+                }]);
+                return false;
+            }
+        }.bind(this));
+
+        var tables = SQLTester.Util.getTables(db);
+        db.close();
+
+        this.dbInfo = {
+            tables: tables,
+            results: results,
+            userCode: userCode
+        };
+
+        if (!error) {
+            callback([]);
+        }*/
+    },
+
+    /*initTests: function(validate) {
+        if (!validate) {
+            return;
+        }
+
+        try {
+            var code = "with(arguments[0]){\n" + validate + "\n}";
+            (new Function(code)).apply({}, this.tester.testContext);
+
+        } catch (e) {
+            return e;
+        }
+    },*/
+
+    /*test: function(userCode, tests, errors, callback) {
+        var errorCount = errors.length;
+
+        this.tester.test(this.dbInfo, tests, errors,
+            function(errors, testResults) {
+                if (errorCount !== errors.length) {
+                    // Note: Scratchpad challenge checks against the exact
+                    // translated text "A critical problem occurred..." to
+                    // figure out whether we hit this case.
+                    var message = $._("Error: %(message)s",
+                        {message: errors[errors.length - 1].message});
+                    // TODO(jeresig): Find a better way to show this
+                    this.output.$el.find(".test-errors").text(message).show();
+                    this.tester.testContext.assert(false, message,
+                        $._("A critical problem occurred in your program " +
+                            "making it unable to run."));
+                }
+
+                callback(errors, testResults);
+            }.bind(this));
+    },*/
+
+    postProcessing: function() {
+        var doc = this.getDocument();
+        var self = this;
+        $(doc).find("table.sql-schema-table").each(function() {
+            var tableName = $(this).data("table-name");
+            $(this).find("th a").click(function() {
+                self.output.postParent({
+                    action: "sql-table-click",
+                    table: tableName
+                });
+            });
+        });
+    },
+
+    runCode: function(userCode, callback) {
+        /*if (!window.SQLOutput.isSupported()) {
+            return callback([], userCode);
+        }
+
+        var db = new SQL.Database();
+
+        var results = SQLTester.Util.execWithResults(db, userCode);
+        var tables = SQLTester.Util.getTables(db);
+        db.close();*/
+        Sk.configure({output:this.outf}); 
+        eval(Sk.importMainWithBody("<stdin>",false,userCode));
+
+        var output = Handlebars.templates["python-results"]({
+            results: results
+        });
+
+        /*var doc = this.getDocument();
+        var oldPageTitle = $(doc).find("head > title").text();
+        doc.open();
+        doc.write(output);
+        doc.close();*/
+
+        /*// If a new result set was added, scroll to the bottom
+        if (results && results.length) {
+            // Ignore the first time the scratchpad loads
+            if (window.SQLOutput.lastResultsLen !== undefined) {
+                $(doc).scrollTop($(doc).height());
+            }
+            window.SQLOutput.lastResultsLen = results.length;
+        }*/
+
+        this.postProcessing();
+
+        callback([], userCode);
+    },
+
+    outf: function(text){
+        if (text != "\n") {
+            window.pythonOutput.innerHTML = "<p style='padding:10px 0px 0px 10px;font-family:monospace;font-size:20px'>"+text+"</p>";    
+        }
+    },
+
+    clear: function() {
+        // Clear the output
+    },
+
+    kill: function() {
+        // Completely stop and clear the output
+    }
+});
+
+
+LiveEditorOutput.registerOutput("python", PythonOutput);

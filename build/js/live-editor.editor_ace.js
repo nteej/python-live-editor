@@ -23,6 +23,9 @@ window.AceEditor = Backbone.View.extend({
         ],
         ace_sql: [
             "numberScrubber"
+        ],
+        ace_python: [
+            "numberScrubber"
         ]
     },
 
@@ -55,7 +58,7 @@ window.AceEditor = Backbone.View.extend({
             editor: this.editor,
             record: this.record
         });
-        
+
         this.tooltipEngine.on("scrubbingStarted", function(name) {
             this.trigger("scrubbingStarted", name);
         }.bind(this));
@@ -391,7 +394,7 @@ window.AceEditor = Backbone.View.extend({
         var doc = this.editor.getSession().getDocument();
 
         return {
-            start: doc.positionToIndex(rng.start), 
+            start: doc.positionToIndex(rng.start),
             end: doc.positionToIndex(rng.end)
         };
     },
@@ -454,3 +457,4 @@ window.AceEditor = Backbone.View.extend({
 LiveEditor.registerEditor("ace_pjs", AceEditor);
 LiveEditor.registerEditor("ace_webpage", AceEditor);
 LiveEditor.registerEditor("ace_sql", AceEditor);
+LiveEditor.registerEditor("ace_python", AceEditor);

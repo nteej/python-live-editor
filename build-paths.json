@@ -20,6 +20,7 @@
             "bower_components/ace-builds/src-noconflict/mode-html.js",
             "bower_components/ace-builds/src-noconflict/ext-static_highlight.js",
             "bower_components/ace-builds/src-noconflict/mode-sql.js",
+            "bower_components/ace-builds/src-noconflict/mode-python.js",
             "bower_components/ace-builds/src-noconflict/ext-searchbox.js",
             "bower_components/ace-builds/src-noconflict/ext-language_tools.js"
         ],
@@ -99,6 +100,10 @@
             "external/html2canvas/html2canvas.js",
             "external/sqlitejs/sql.js"
         ],
+        "output_python_deps": [
+            "external/skulpt/skulpt.js",
+            "external/skulpt/skulpt-stdlib.js"
+        ],
         "output_webpage": [
             "js/output/webpage/webpage-tester.js",
             "js/output/webpage/webpage-output.js"
@@ -107,6 +112,10 @@
             "build/tmpl/sql-results.js",
             "js/output/sql/sql-tester.js",
             "js/output/sql/sql-output.js"
+        ],
+        "output_python": [
+            "build/tmpl/python-results.js",
+            "js/output/python/python-output.js"
         ],
         "output": [
             "build/tmpl/output.js",

@@ -1,0 +1,32 @@
+<html>
+<head>
+{{!
+These styles are intentionally not put next to the other styles so that
+    they will apply only to the sql iframe output.
+}}
+<style>
+
+</style>
+</head>
+
+<body>
+<div class="python-output">
+    {{#if results }}
+        <h1>Results</h1>
+    {{/if}}
+    {{#each results}}
+        <table class="sql-result-table">
+            <tr>
+                {{#each result}}
+                    {{#isNull data}}
+                        <td>NULL</td>
+                    {{else}}
+                        <td>{{data}}</td>
+                    {{/isNull}}
+                {{/each}}
+            </tr>
+        </table>
+    {{/each}}
+</div>
+</body>
+</html>
