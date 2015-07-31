@@ -36,14 +36,14 @@
     <script src="../../build/js/live-editor.editor_ace.js"></script>
 
     <script>
-    var defaultCode = "def fact(n):"+"\n"+
+    var defaultCode = "def fibo(n):"+"\n"+
     "\t"+"if n == 0:"+"\n"+
     "\t"+"\t"+"return 0"+"\n"+
     "\t"+"elif n == 1: "+"\n"+
     "\t"+"\t"+"return 1"+"\n"+
     "\t"+"else:"+"\n"+
-    "\t"+"\t"+"return fact(n-1)+fact(n-2)"+"\n"+
-    "print fact(4)";
+    "\t"+"\t"+"return fibo(n-1)+fibo(n-2)"+"\n"+
+    "print fibo(4)";
 
         window.liveEditor = new LiveEditor({
         editorType: "ace_python",
