@@ -1135,6 +1135,7 @@ window.LiveEditor = Backbone.View.extend({
     showError: null,
 
     handleErrors: function(errors) {
+        
 
         if (!this.newErrorExperience) {
             this.tipbar.toggleErrors(errors, 1500);

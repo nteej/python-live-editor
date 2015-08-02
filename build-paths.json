@@ -123,6 +123,7 @@
             "external/skulpt/skulpt-stdlib.js"
         ],
         "output_python": [
+            "build/tmpl/python-results.js",
             "js/output/python/python-output.js"
         ],
         "output": [

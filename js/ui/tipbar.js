@@ -59,6 +59,8 @@ window.TipBar = Backbone.View.extend({
 
     update: function(show) {
         var errors = this.errors;
+        console.log(errors);
+        console.log(JSON.stringify(errors));
         var pos = errors[this.pos] == null ? 0 : this.pos;
         var bar = this.$el.find(".tipbar");
 

@@ -815,7 +815,6 @@ window.PJSOutput = Backbone.View.extend({
                 if (errors && errors.length > 0) {
                     return callback(errors, userCode);
                 }
-
                 try {
                     this.injectCode(userCode, callback);
                 } catch (e) {
