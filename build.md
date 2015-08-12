@@ -1,14 +1,12 @@
-The basic functionality of the LiveEditor is explained here (https://github.com/Khan/live-editor/wiki/How-the-live-editor-works)
+The basic functionality of the LiveEditor is explained in a previous wiki [here](https://github.com/Khan/live-editor/wiki/How-the-live-editor-works)
 
-The functionality is transferable to other languages like SQL, HTML/CSS(Webpage), Python, or any other, one that can be compiled/interpreted using JS, the basic idea remains the same.
+The functionality is transferable to other languages like SQL, HTML/CSS(Webpage), Python, or any other language that can be compiled/interpreted using JS.   
 
-You can start off by going through the sql.html, or webpage.html files
+A good starting point is to go through the current implementation of SQL in LiveEditor as shown in "demo/simple" folder by sql.html and output-sql.html files.   
+For sql.html, most of the code is generated through the gulp build process. The paths of these can be traced from the stylesheet and script files linked in the file from the build-paths.json.   
+A div is allocated for handlebars to render the live-editor in, and the LiveEditor object is created by passing in the properties.   
+An abstract LiveEditor object definition is shown below with <language> placeholder from the html file:
 
-These files, start off by linking stylesheets for live-editor - core dependencies, audio, tooltips and UI
-Then, they declare a div with an id, say "sample-live-editor"
-Lastly, they include the script file dependencies for  live-editor - core dependencies, ace editor's dependencies, audio, shared dependencies, tooltips, UI, and ACE editor itself
-
-To initialize LiveEditor, they create a new LiveEditor object with initial configuration passed along as parameters.
 ```
 window.liveEditor = new LiveEditor({
         el: $("#sample-live-editor"),//el is the html element where live-editor handlebars templates will be rendered
@@ -16,6 +14,7 @@ window.liveEditor = new LiveEditor({
         code: window.localStorage["test-code"] || "<default language code>",
         editorType: "ace_<language>", // has to be registered in "js/editors/ace/editor-ace.js"
         execFile: "output-<language>.html", // need to be created, can be seeded with output-sql.html
+        /*Dependencies and view proprties*/
         /*Should not require any changes*/
         width: 400,
         height: 400,
@@ -36,19 +35,20 @@ liveEditor.editor.on("change", function() {
 }); // On change/edit stores the code to localstorage
 
 ```
-___________________
 
-Following steps are based on reverse engineering the current implementation of languages incorporated after ProcessingJS, viz. sql and webpage:
+Going through the sql.html and build-paths.json, we can get a fair estimate of the changes we need to do to integrate a new language in LiveEditor.
+The following steps are based on reverse engineering the current implementation of languages incorporated after ProcessingJS, viz. sql and webpage:
 
 0. Follow the Building instructions in the Readme.md
-1. Create a template for language's output file
+
+1. Create a template for language's output file  
 In "tmpl" folder create a handlebars template <language>-results.handlebars
 
-2. Add dependencies for in-browser compiler/interpreter
+2. Add dependencies for in-browser compiler/interpreter  
 In the "external" folder, create a folder for the new language's in-browser compiler/interpreter and copy the corresponding JS files to the folder.
 
-3. Create Backbone view for code output 
-In "js/output" folder, create a folder for the new language, and create <language>-output.js file. Create a Backbone view for the language's output (refer "sql-output.js" file in the "js/output/sql" folder for exact syntax), window.<language>Output, and following functions:
+3. Create Backbone view for code output   
+In "js/output" folder, create a folder for the new language, and create <language>-output.js file. Create a Backbone view for the language's output (refer "sql-output.js" file in the "js/output/sql" folder for exact syntax), window.<language>Output, and following functions:  
 
     initialize
         config - set from caller's config
@@ -77,23 +77,29 @@ In "js/output" folder, create a folder for the new language, and create <languag
                     }]);
         ```
         
-        return the deferred object.
+        return the deferred object.  
     runCode
         takes two parameters userCode and callback function
-        call the dependency library's function on userCode and set the code output to the Handlebars template created   above, as follows
-        ```var output = Handlebars.templates["<language>-results"]({results: results, errors:errors});```
+        call the dependency library's function on userCode and set the code output to the Handlebars template created   above, as follows   
+        ```
+        var output = Handlebars.templates["<language>-results"]({results: results, errors:errors});
+        ```   
         here "results" is the result of the userCode compilation from the language compiler dependency.
         write the "output" variable to iframe in output file.
         errors caught in runCode can be sent to "oh noes" via callback.
         capture the errors in an array of objects and send them as "callback(errors, userCode)"
     lastly register the output as:
-        ```LiveEditorOutput.registerOutput("<language>", <language>Output);```
+        ```
+        LiveEditorOutput.registerOutput("<language>", <language>Output);
+        ```
 
-4. Add and register the language to ace configuration
-In "js/editors/ace/editor-ace.js", add ace_<language> array key, with specific tooltip options required for the language, and register it at the bottom of the page as:
-    ```LiveEditor.registerEditor("ace_<language>", AceEditor);```
+4. Add and register the language to ace configuration   
+In "js/editors/ace/editor-ace.js", add ace_<language> array key, with specific tooltip options required for the language, and register it at the bottom of the page as:   
+    ```
+    LiveEditor.registerEditor("ace_<language>", AceEditor);
+    ```
 
-5. Configure the build paths for the files created
+5. Configure the build paths for the files created   
 In the build-paths.json, you will need to change/add under the scripts object
 
     Add ace mode for the language to the "editor_ace_deps"'s array.
@@ -103,29 +109,31 @@ In the build-paths.json, you will need to change/add under the scripts object
         output_<language>_deps array - for language compiling/interpreting dependencies
         output_language array - containing paths to the <language>-output.js and <language>-tester.js
 
-6. Setting up the home page and the output html pages
+6. Setting up the home page and the output html pages   
 In "demo/simple" folder create the language specific index and output html files as
 <language>.html and <language>-output.html (refer sql.html and sql-output.html for specific syntax)
 
-For <language>.html:
+For <language>.html:  
     Copy the stylesheets and script dependencies from sql.html
     The scripts are compiled during the gulp build process.
 
     In the last script tag, change the defaultCode to the <language> code
 
-    Create a new LiveEditor object, set
-        "editorType" to ace_<language> (as defined in "js/editors/ace/editor-ace.js")
-        "output" to <language> (as defined in "js/output/<language>/<language>-output.js")
-        "el" as the element where the live-editor template will be loaded
-        "code" as window.localStorage["test-<language>-code"] || defaultCode
-        "execFile" as "output_<language>.html"
-    set on-change listener for code change
+    Create a new LiveEditor object, set  
+        "editorType" to ace_<language> (as defined in "js/editors/ace/editor-ace.js")  
+        "output" to <language> (as defined in "js/output/<language>/<language>-output.js")  
+        "el" as the element where the live-editor template will be loaded   
+        "code" as window.localStorage["test-<language>-code"] || defaultCode   
+        "execFile" as "output_<language>.html"   
+    set on-change listener for code change   
+    ```
         liveEditor.editor.on("change", function() {
             window.localStorage["test-<language>-code"] = liveEditor.editor.text();
         });
-For <language>-output.html:
-    Copy the contents of "output_sql.html" and change the last two script sources to language specific ones:
-    <script src="../../build/js/live-editor.output_<language>_deps.js"></script>
-    <script src="../../build/js/live-editor.output_<language>.js"></script>
+    ```
+For <language>-output.html:   
+    Copy the contents of "output_sql.html" and change the last two script sources to language specific ones:   
+    <script src="../../build/js/live-editor.output_<language>_deps.js"></script>   
+    <script src="../../build/js/live-editor.output_<language>.js"></script>   
     
 Run gulp at the root location, in a new terminal window/tab run python server
