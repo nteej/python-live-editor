@@ -1,11 +1,12 @@
-The basic functionality of the LiveEditor is explained in a previous wiki [here](https://github.com/Khan/live-editor/wiki/How-the-live-editor-works)
+The basic functionality of the LiveEditor is explained in a previous wiki [here](https://github.com/Khan/live-editor/wiki/How-the-live-editor-works)  
 
-The functionality is transferable to other languages like SQL, HTML/CSS(Webpage), Python, or any other language that can be compiled/interpreted using JS.   
+The editor was initially made for ProcessingJS, with workers for learner friendly code hints (baby hint), linting, and testing the assignments. It is a comprehensive build, but recently there have been experimental explorations in integrating developer environments for HTML, SQLite, and Python. The modularity of the tool allows it to be leveraged to run any language that can be compiled/interpreted using JS in the browser. 
 
-A good starting point is to go through the current implementation of SQL in LiveEditor as shown in "demo/simple" folder by sql.html and output-sql.html files.   
-For sql.html, most of the code is generated through the gulp build process. The paths of these can be traced from the stylesheet and script files linked in the file from the build-paths.json.   
-A div is allocated for handlebars to render the live-editor in, and the LiveEditor object is created by passing in the properties.   
-An abstract LiveEditor object definition is shown below with &lt;language&gt; placeholder from the html file:
+As the SQLite and Webpage experiments are lighter versions, they are a good starting point to understand the architecture to integrate a new language. The SQL implementation in LiveEditor can be seen in "demo/simple" folder in the sql.html and output-sql.html files.   
+
+The sql.html file is where the LiveEditor object is declared and the UI for the IDE is loaded. The code output is rendered in output-sql.html and is embeded in the sql.html file in an iframe. Each of these files have a div with an id which is provided to a handlebars template to render the corresponding view. They also have js dependencies which are generated through a gulp build processes. The paths of the files that generate these dependencies can be traced from the from the build-paths.json.   
+
+An abstract LiveEditor object declaration is shown below with &lt;language&gt; placeholder :
 
 ```
 window.liveEditor = new LiveEditor({
@@ -36,10 +37,9 @@ liveEditor.editor.on("change", function() {
 
 ```
 
-Going through the sql.html and build-paths.json, we can get a fair estimate of the changes we need to do to integrate a new language in LiveEditor.
-The following steps are based on reverse engineering the current implementation of languages incorporated after ProcessingJS, viz. sql and webpage:
+Follow the steps below to get started in integrating your library into the LiveEditor:
 
-1. Follow the Building instructions in the Readme.md
+1. Follow the 'Building' instructions in the [Readme.md](https://github.com/Khan/live-editor/blob/master/README.md)   
 
 2. Create a template for language's output file  
 In "tmpl" folder create a handlebars template &lt;language&gt;-results.handlebars
@@ -51,25 +51,25 @@ In the "external" folder, create a folder for the new language's in-browser comp
 In "js/output" folder, create a folder for the new language, and create &lt;language&gt;-output.js file. Create a Backbone view for the language's output (refer "sql-output.js" file in the "js/output/sql" folder for exact syntax), window.&lt;language&gt;Output, and following functions:  
 
     - initialize  
-        config - set from caller's config  
-        output - set from caller's config  
-        call render  
+        config, output - set from caller's config  
+        call the render method
     - render  
         find the output element and set the contents of it
     - lint  
         takes two parameters userCode and skip word  
-        run the code through all the lines of code, catch all errors and return them  
+        run the code through all the lines of input code, catch all the errors and return them as an array of object through deferred object as shown below:     
         errors caught in lint can be sent to "oh noes" via $.Deferred()  
-        create a new 
+        create a new object   
                 ```var deferred = $.Deferred();```   
-        add the errors to the "resolve" object of deferred
+        send the errors to the "resolve" method of deferred object   
+        
                 ```
-                deferred.resolve([{
-                    row: <row number on which error occured>,
-                    column: <column number on which error occured>,
-                    text: <error text>,
-                    type: "error",
-                    source: "slowparse" // not sure what this is
+                deferred.resolve([{   
+                    row: <row number on which error occured>,    
+                    column: <column number on which error occured>,   
+                    text: <error text>,   
+                    type: "error",   
+                    source: "slowparse" // not sure what this is   
                 }]);
                 ```
         
@@ -80,8 +80,8 @@ In "js/output" folder, create a folder for the new language, and create &lt;lang
                 ```
                 var output = Handlebars.templates["<language>-results"]({results: results, errors:errors});
                 ```
-        here "results" is the result of the userCode compilation from the language compiler dependency.  
-        write the "output" variable to iframe in output file.  
+        here "results" is the result of the userCode compilation from the language's JS compiler dependency.  
+        get the output iframe document and write the "output" variable to it.  
         errors caught in runCode can be sent to "oh noes" via callback.  
         capture the errors in an array of objects and send them as "callback(errors, userCode)"  
         lastly register the output as:   
@@ -94,13 +94,12 @@ In "js/editors/ace/editor-ace.js", add ace_&lt;language&gt; array key, with spec
     ```   
 
 6. Configure the build paths for the files created   
-In the build-paths.json, you will need to change/add under the scripts object
+In the build-paths.json, change/add the following under the scripts object:
 
     Add ace mode for the language to the "editor_ace_deps"'s array.
     Most of the time it should be of the format mode-&lt;language&gt;.js, but you can check the exact filename in bower_components/ace-builds/src-noconflict/ location.
 
-    Apart from this you will need to add 
-        output_&lt;language&gt;_deps array - for language compiling/interpreting dependencies
+    Add output_&lt;language&gt;_deps array - listing language compiling/interpreting dependencies
         output_language array - containing paths to the &lt;language&gt;-output.js and &lt;language&gt;-tester.js   
 
 7. Setting up the home page and the output html pages   
@@ -132,3 +131,24 @@ For &lt;language&gt;-output.html:
 - &lt;script src="../../build/js/live-editor.output_&lt;language&gt;.js"&gt;&lt;/script&gt;   
     
 Run gulp at the root location, in a new terminal window/tab run python server.
+
+After the build process these are the new/changed files :
+
+```
+build   
+    |_ js   
+    |   |_ live-editor.editor_ace_deps.js   
+    |   |_ live-editor.output_<language>_deps.js   
+    |   |_ live-editor.output_<language>.js   
+    |   
+    |_ tmpl   
+        |_ <language>-results.js   
+demos   
+    |_ simple   
+        |_ <language>.html   
+        |_ output_<language>.html   
+```
+
+Test the code at localhost:8000/demos/simple/&lt;language&gt;.html
+
+Once the language is integrated into the LiveEditor environment, build workers for linting, hinting, and testing the code.
